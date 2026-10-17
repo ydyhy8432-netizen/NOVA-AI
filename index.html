@@ -1,0 +1,177 @@
+<!-- ================================================================= -->
+<!--                       NOVA AI - CORE ENGINE                      -->
+<!--            Single-File Production-Grade Voice Assistant          -->
+<!--        File: index.html (HTML/CSS/JS)                            -->
+<!-- ================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Nova AI - Adam's Personal Assistant</title>
+  <style>
+    :root {
+      --bg-base: #060913;
+      --bg-surface: #0c1222;
+      --bg-card: rgba(16, 24, 44, 0.75);
+      --bg-card-hover: rgba(22, 34, 64, 0.85);
+      --border-subtle: rgba(0, 242, 254, 0.18);
+      --border-glow: rgba(0, 242, 254, 0.45);
+      --accent-cyan: #00f2fe;
+      --accent-azure: #4facfe;
+      --accent-purple: #9d4edd;
+      --accent-green: #00f5a0;
+      --accent-amber: #ffb703;
+      --accent-red: #ff3366;
+      --text-main: #f0f6fc;
+      --text-muted: #8b9bb4;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      --glass-blur: blur(14px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body.stealth-mode {
+      --bg-base: #000000;
+      --bg-surface: #040404;
+      --bg-card: #080808;
+      --bg-card-hover: #101010;
+      --border-subtle: #222222;
+      --border-glow: #ff3344;
+      --accent-cyan: #ff3344;
+      --accent-azure: #ff5566;
+      --text-main: #e0e0e0;
+      --text-muted: #666666;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { background-color: var(--bg-base); color: var(--text-main); font-family: var(--font-stack); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; padding-top: var(--safe-top); padding-bottom: calc(75px + var(--safe-bottom)); line-height: 1.4; font-size: 14px; }
+    .top-status-bar { position: sticky; top: 0; z-index: 100; background: rgba(6, 9, 19, 0.88); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border-subtle); padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .brand-group { display: flex; align-items: center; gap: 8px; }
+    .brand-orb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); animation: pulseGlow 2s infinite ease-in-out; }
+    @keyframes pulseGlow { 0%, 100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.15); opacity: 1; } }
+    .brand-title { font-weight: 800; letter-spacing: 0.8px; font-size: 15px; background: linear-gradient(90deg, #fff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .status-badges { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; }
+    .badge { padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-card); display: flex; align-items: center; gap: 4px; color: var(--text-muted); }
+    .badge.active { color: var(--accent-green); border-color: rgba(0, 245, 160, 0.4); }
+    .badge.ai-mode { color: var(--accent-cyan); border-color: var(--border-glow); }
+    .hero-container { padding: 16px 14px 10px; display: flex; flex-direction: column; align-items: center; position: relative; }
+    .visualizer-wrapper { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    #visualizerCanvas { position: absolute; width: 220px; height: 220px; border-radius: 50%; pointer-events: none; }
+    .core-orb-button { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00f2fe, #182848, #070c18); border: 2px solid var(--accent-cyan); box-shadow: 0 0 25px rgba(0, 242, 254, 0.45); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; outline: none; }
+    .core-orb-button.listening { background: radial-gradient(circle at 35% 35%, #ff3366, #7a0026, #120308); border-color: var(--accent-red); box-shadow: 0 0 35px rgba(255, 51, 102, 0.7); }
+    .core-orb-button svg { width: 32px; height: 32px; fill: #ffffff; }
+    .core-orb-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-top: 4px; text-transform: uppercase; color: #ffffff; }
+    .voice-feedback-card { width: 100%; max-width: 580px; background: var(--bg-card); backdrop-filter: var(--glass-blur); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .feedback-header { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+    .transcript-box { font-size: 15px; font-weight: 600; color: var(--text-main); min-height: 22px; }
+    .response-box { font-size: 13px; color: var(--accent-cyan); background: rgba(0, 242, 254, 0.05); border-left: 3px solid var(--accent-cyan); padding: 8px 10px; border-radius: 0 8px 8px 0; max-height: 120px; overflow-y: auto; }
+    .tab-nav { display: flex; background: var(--bg-surface); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); overflow-x: auto; padding: 6px 12px; gap: 8px; position: sticky; top: 45px; z-index: 90; scrollbar-width: none; }
+    .tab-btn { padding: 7px 14px; border-radius: 20px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .tab-btn.active { background: var(--bg-card); color: var(--accent-cyan); border-color: var(--border-glow); }
+    .tab-pane { display: none; padding: 14px; max-width: 680px; margin: 0 auto; width: 100%; }
+    .tab-pane.active { display: block; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px; }
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .card-top { display: flex; align-items: center; justify-content: space-between; }
+    .card-num { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); background: rgba(255, 255, 255, 0.04); padding: 2px 6px; border-radius: 4px; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+    .card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.35; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.12); transition: .3s; border-radius: 24px; border: 1px solid var(--border-subtle); }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent-cyan); border-color: var(--accent-cyan); }
+    input:checked + .slider:before { transform: translateX(20px); background-color: #000; }
+    .bottom-dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(6, 9, 19, 0.92); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border-subtle); padding: 8px 16px calc(8px + var(--safe-bottom)); display: flex; align-items: center; justify-content: space-around; }
+    .dock-btn { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; cursor: pointer; }
+    .dock-btn.active { color: var(--accent-cyan); }
+    .dock-btn svg { width: 20px; height: 20px; fill: currentColor; }
+  </style>
+</head>
+<body>
+  <header class="top-status-bar">
+    <div class="brand-group"><div class="brand-orb"></div><span class="brand-title">NOVA AI - ADAM</span></div>
+    <div class="status-badges">
+      <div class="badge active"><span>RAM</span> <b id="ramValue">11.4MB</b></div>
+      <div class="badge"><span>⚡</span> <b id="batteryPct">88%</b></div>
+      <div class="badge ai-mode"><b>HYBRID</b></div>
+    </div>
+  </header>
+  <section class="hero-container">
+    <div class="visualizer-wrapper">
+      <canvas id="visualizerCanvas" width="220" height="220"></canvas>
+      <button class="core-orb-button" id="coreOrbButton" onclick="toggleListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+        <span class="core-orb-label" id="coreOrbStatus">STANDBY</span>
+      </button>
+    </div>
+    <div class="voice-feedback-card">
+      <div class="feedback-header"><span>PERSONA: NOVA</span><span>HOTWORD ACTIVE</span></div>
+      <div class="transcript-box" id="transcriptDisplay">"Tap Nova or say 'Nova AI'..."</div>
+      <div class="response-box" id="responseDisplay">Nova Engine online for Adam. All 60 core modules ready.</div>
+    </div>
+  </section>
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-section1')">Engine (1-20)</button>
+    <button class="tab-btn" onclick="switchTab('tab-section2')">Technical (21-40)</button>
+    <button class="tab-btn" onclick="switchTab('tab-section3')">Sci-Fi HUD (41-60)</button>
+  </nav>
+  <main class="tab-pane active" id="tab-section1">
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="card-top"><span class="card-title">🎙️ Hotword Detection</span><span class="card-num">#01</span></div>
+        <p class="card-desc">Continuous background listener tuned for wake phrase.</p>
+        <div class="toggle-row"><span>Listener</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+  </main>
+  <footer class="bottom-dock">
+    <button class="dock-btn active" onclick="switchTab('tab-section1')"><span>Engine</span></button>
+    <button class="dock-btn" onclick="switchTab('tab-section2')"><span>Technical</span></button>
+    <button class="dock-btn" onclick="switchTab('tab-section3')"><span>HUD</span></button>
+  </footer>
+  <script>
+    let isListening = false;
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+    function toggleListening() {
+      isListening = !isListening;
+      const btn = document.getElementById('coreOrbButton');
+      const status = document.getElementById('coreOrbStatus');
+      if(isListening) {
+        btn.classList.add('listening');
+        status.textContent = "LISTENING";
+      } else {
+        btn.classList.remove('listening');
+        status.textContent = "STANDBY";
+      }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('visualizerCanvas');
+      const ctx = canvas.getContext('2d');
+      let angle = 0;
+      function render() {
+        requestAnimationFrame(render);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        angle += 0.03;
+        const cx = canvas.width / 2, cy = canvas.height / 2, radius = 75, bars = 36;
+        for (let i = 0; i < bars; i++) {
+          const a = (i / bars) * Math.PI * 2 + angle;
+          const mag = 8 + Math.sin(a * 4 + angle * 2) * 6 + (isListening ? Math.random() * 15 : 0);
+          ctx.strokeStyle = isListening ? "#ff3366" : "#00f2fe";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
+          ctx.lineTo(cx + Math.cos(a) * (radius + mag), cy + Math.sin(a) * (radius + mag));
+          ctx.stroke();
+        }
+      }
+      render();
+    });
+  </script>
+</body>
+</html>
